@@ -45,7 +45,7 @@ if authentication_status:
         st.subheader("Rendimento por Hectar")
         st.write("Rendimento por hectar / anos")
 
-        df = pd.read_csv(r"C:\Users\889612123\Documents\GitHub\coding\employees\csv\opReport1.csv",sep=";",decimal=",")
+        df = pd.read_csv(r"coding/employees/csv/opReport1.csv",sep=";",decimal=",")
         df
 
     with st.container():
