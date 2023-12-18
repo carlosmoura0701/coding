@@ -52,11 +52,11 @@ if authentication_status:
         st.subheader("Chuva")
         st.write("mm de chuva / anos")
 
-        df = pd.read_csv(r"C:\Users\889612123\Documents\GitHub\coding\employees\csv\chuva.csv",sep=";",decimal=",")
+        df = pd.read_csv(r"coding/employees/csv/chuva.csv",sep=";",decimal=",")
         df
 
         st.write("---")
-        dados = pd.read_csv(r"C:\Users\889612123\Documents\GitHub\coding\employees\csv\chuva.csv",sep=";",decimal=",")
+        dados = pd.read_csv(r"coding/employees/csv/chuva.csv",sep=";",decimal=",")
         st.area_chart(dados,x="mes",y="total")
 
 
