@@ -38,7 +38,7 @@ if authentication_status:
         st.subheader("Funcionários cadastrados")
         st.write("Relação de funcionários, salários e horas trabalhadas")
 
-        df = pd.read_csv(r"C:\Users\889612123\Documents\GitHub\coding\employees\csv\pay.csv",sep=";",decimal=",")
+        df = pd.read_csv(r"coding/employees/csv/pay.csv",sep=";",decimal=",")
         df
 
     with st.container():
