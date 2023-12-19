@@ -4,3 +4,4 @@ PyYAML>=5.3.1
 streamlit>=1.18.0
 extra-streamlit-components>=0.1.60
 streamlit-authenticator==0.1.5
+streamlit-option-menu
