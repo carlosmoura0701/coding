@@ -64,14 +64,14 @@ if authentication_status:
 
     if selected == "Rain":
             st.title(f"You have selected {selected}")
-        with st.container():
-            st.subheader("Chuva")
-            st.write("mm de chuva / anos")
+            with st.container():
+                st.subheader("Chuva")
+                st.write("mm de chuva / anos")
 
-            df = pd.read_csv("coding/employees/csv/chuva.csv",sep=";",decimal=",")
-            df
+                df = pd.read_csv("coding/employees/csv/chuva.csv",sep=";",decimal=",")
+                df
 
-            st.write("---")
-            dados = pd.read_csv("coding/employees/csv/chuva.csv",sep=";",decimal=",")
-            st.area_chart(dados,x="mes",y="total")
- 
+                st.write("---")
+                dados = pd.read_csv("coding/employees/csv/chuva.csv",sep=";",decimal=",")
+                st.area_chart(dados,x="mes",y="total")
+
