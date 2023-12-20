@@ -61,6 +61,26 @@ if authentication_status:
 
     if selected == "New Employee":
             st.title(f"You have selected {selected}")
+            st.title(f"{selected}")
+            st.subheader("Registered employees")
+            df = pd.read_csv("coding/employees/csv/employess.csv",sep=";",decimal=",")
+            st.write(df)
+            
+            form = st.form("options_form")
+            user_name = form.text_input("Name")
+            user_designation = form.text_input("Designation")
+            user_day_rates = form.text_input("Day Rates")
+
+            button_press = form.form_submit_button()
+            
+            if button_press:
+                new_data = {"name": user_name,"designation":user_designation,"day_rates":int(user_day_rates)}
+                st.write(new_data)
+                df = df.concat(new_data)        
+                df.to_csv("coding/employees/csv/employess.csv",index=False)
+            else:
+                st.write("Please fill in the form")                    
+                    
 
     if selected == "Rain":
             st.title(f"You have selected {selected}")
