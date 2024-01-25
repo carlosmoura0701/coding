@@ -142,11 +142,11 @@ def renameFile(pathA,pathB):
 
 # ------- paths ------- #
         
-resume_db_path = '/home/carlos/Dropbox/code/employees/resumeDb'
-employee_resume_db_path = '/home/carlos/Dropbox/code/employees/csv/_resume.csv'
+resume_db_path = 'employees/resumeDb'
+employee_resume_db_path = 'employees/csv/_resume.csv'
 
-db_path = '/home/carlos/Dropbox/code/employees/db'
-employee_path = '/home/carlos/Dropbox/code/employees/csv/_employees.csv'
+db_path = 'employees/db'
+employee_path = 'employees/csv/_employees.csv'
     
 # ----------------------- main ----------------------- #
     
