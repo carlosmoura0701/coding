@@ -8,8 +8,7 @@ numpy
 altair
 datetime
 extra-streamlit-components>=0.1.60
-
-
+openpyxl
 
 
 
