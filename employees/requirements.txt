@@ -3,7 +3,7 @@ streamlit_option_menu
 streamlit_extras
 pandas
 streamlit>=1.11.1
-streamlit-authenticator>=0.1.5
+streamlit-authenticator==0.1.5
 numpy
 altair
 datetime
