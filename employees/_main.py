@@ -26,10 +26,6 @@ import numpy as np
 # ----------------------- funções ----------------------- #
 
 # colocar lembrete de pagamento!
-
-# def calculaHoras(): <- Passar por toda a tabela calcular todas as horas (somar por linha)
-def forceRerun():
-    st.rerun()
     
 def hourToMinute(min): # calculadora de minutos para horas
     h=min//60
@@ -119,26 +115,80 @@ def resumeDbChoice(choice):
         dfTemp = pd.read_excel(xls, choice)
 
         st.dataframe(dfTemp,width=3000)
-                   
-def renameFile(pathA,pathB):
-            
-    os.chdir(pathA)
+ 
+def sorted_directory_listing_with_os_listdir(directory):
+    items = os.listdir(directory)
+    sorted_items = sorted(items)
+    return sorted_items
 
-    for count, f in enumerate(os.listdir()):
-        f_name, f_ext = os.path.splitext(f)
-        f_name = str(count)
+def renameFiles(list,path):
+
+    count = 0
     
-        new_name = f'{f_name}{f_ext}'
-        os.rename(f, new_name)
+    for count in range(len(list)):
+   
+        source = path + list[count]
+        destination = path + str(count) + ".xlsx"
+        os.rename(source, destination)
 
-    os.chdir(pathB)
+        count += 1
 
-    for count, f in enumerate(os.listdir()):
-        f_name, f_ext = os.path.splitext(f)
-        f_name = str(count)
+def removeRegisterFromDb(path,removeIndex):
+
+    a_file = removeIndex + '.xlsx'
+
+    joined_path = os.path.join(path, a_file)          
+    os.remove(joined_path)
+
+def dateEditor(df):
+
+    df_edited = st.data_editor( # data_editor <- permite a edição dos registros do df
+    df, # ----------- VARIA CONFORME O MES ----------- #
+    column_config={
+    'Name': st.column_config.TextColumn(
+    'Name'),
+
+    'Date': st.column_config.DatetimeColumn(
+    'Date',
+    min_value=datetime(2023,6,1),
+    max_value=datetime(2025,1,1),
+    format='D MMM YYYY',
+    step=60),
+
+    'Start time': st.column_config.TimeColumn(
+    'Start time',
+    min_value=time(0,0,10),
+    #max_value=time(23,0,0),
+    format='hh:mm a',
+    step=60),
+
+    'Finish time': st.column_config.TimeColumn(
+    'Finish time',
+    min_value=time(0,0,10),
+    #max_value=time(23,0,0),
+    format='hh:mm a',
+    step=60),
     
-        new_name = f'{f_name}{f_ext}'
-        os.rename(f, new_name)
+    'Other hours': st.column_config.TimeColumn(
+    'Other hours',
+    min_value=time(0,0,0),
+    max_value=time(23,0,0),
+    format='HH:mm',
+    step=60),
+
+    'TOTAL HOURS': st.column_config.TimeColumn(
+    'TOTAL HOURS',
+    min_value=time(0,0,0),
+    max_value=time(23,0,0),
+    format='HH:mm',
+    step=60), 
+
+    },
+    hide_index=True,
+    disabled=('Name', 'Date','TOTAL HOURS'),width=1000
+    )                
+
+    return df_edited
 
 # ------- paths ------- #
         
@@ -147,7 +197,7 @@ employee_resume_db_path = 'employees/csv/_resume.csv'
 
 db_path = 'employees/db'
 employee_path = 'employees/csv/_employees.csv'
-    
+
 # ----------------------- main ----------------------- #
     
 st.set_page_config(page_title='Hours Manager',layout='centered',page_icon='clock430')
@@ -163,7 +213,7 @@ file_path = Path(__file__).parent / 'hashed_pw.pkl'
 with file_path.open('rb') as file:
     hashed_passwords = pickle.load(file)
 
-authenticator = stauth.Authenticate(names, usernames, hashed_passwords, 'login_cookie','adqeecd', cookie_expiry_days=999) # tempo para senha salva expirar
+authenticator = stauth.Authenticate(names, usernames, hashed_passwords, 'login_cookie','adqecd', cookie_expiry_days=30) # tempo para senha salva expirar
 
 name, authentication_status, username = authenticator.login('Login','main')
 
@@ -191,16 +241,21 @@ if authentication_status:
         st.title(f'{selected}')
 
         with st.container():
+
             st.subheader('Registered employees')
-            st.write('List of employees and salaries')
+            st.write('List of employees')
             df = pd.read_csv(employee_path,sep=';')
 
         filtered_df = dataframe_explorer(df, case=False)
+
         st.dataframe(filtered_df, use_container_width=True)
+
+        st.subheader('Amount payable resume')
+        st.write('Resume of amount payable per month')  
 
         menu = ['January','February','March','April','May','June','July','August','Setember','October','November','December']
         choice = st.selectbox('Select the month',menu)
-        
+
         if(choice == 'January'):
             resumeDbChoice(choice)
         if(choice == 'February'):
@@ -252,9 +307,9 @@ if authentication_status:
         
         dict2 = { # dicionario para o banco de dados do resumo
             'Name':[user_name],
-            'Month':[datetime(2024,1,1)],
+            'Month':[None],
             'Designation':[user_designation],
-            'Total hours worked':[datetime(2024,1,1)],
+            'Total hours worked':[None],
             'Daily rate':[daily_rate],
             'Regular hours':[user_hours],
             'Total Payable':[0]}  
@@ -347,45 +402,47 @@ if authentication_status:
         dfNames = pd.read_csv(employee_path,sep=';')
         user_index = form.number_input('index',format='%.0f')
         button_press = form.form_submit_button()
-        removeIndex = user_index
-
+        
         if button_press:
 
-            intRemoveIndex = int(removeIndex)
+            intRemoveIndex = int(user_index)
             strRemoveIndex= str(intRemoveIndex)
 
             # ------- dropando o registro do _employees.csv ------- #
 
             df = pd.read_csv(employee_path,sep=';')
             dfIndex = df.iloc[intRemoveIndex]
-           #ame = dfIndex[0]
-
+         
             dfTemp = df.drop(intRemoveIndex) # removendo o registro da tabela de nomes
             dfTemp.to_csv(employee_path,index=False,sep=';') #index = False <-- cuidado com a criação de índice dentro de índice!
 
             # ------- dropando o registro do _resume.csv ------- #
 
-            intRemoveIndex = int(removeIndex)
-            strRemoveIndex= str(intRemoveIndex)
-            df2 = pd.read_csv(employee_resume_db_path,sep=';'
-                              )
-            dfIndex = df.iloc[intRemoveIndex]
-            #name = dfIndex[0]
+            df2 = pd.read_csv(employee_resume_db_path,sep=';')
 
+            dfIndex = df.iloc[intRemoveIndex]
+        
             dfTemp = df2.drop(intRemoveIndex)
             dfTemp.to_csv(employee_resume_db_path,index=False,sep=';')
 
-            # ------- removendo o registro do banco de dados principal ------- #
+            # ------- removendo o registro do db ------- #
 
-            a_path = db_path # removendo o registro da pasta de arquivos de nomes
-            a_file = strRemoveIndex + ".xlsx" # criando o nome do arquivo selecionado para remoção
+            removeRegisterFromDb(db_path,strRemoveIndex)
 
-            joined_path = os.path.join(a_path, a_file)          
-            os.remove(joined_path)
-            
-            renameFile(db_path,resume_db_path)
+            # ------- removendo o registro do db do resumo ------- #
+
+            removeRegisterFromDb(resume_db_path,strRemoveIndex)
+
+            # ------- restaurando o indice do db e do resume db ------- #
+
+            ordered_db_list = sorted_directory_listing_with_os_listdir('/home/carlos/Dropbox/code/employees/db/')
+            renameFiles(ordered_db_list,db_path)
+
+            ordered_resume_db_list = sorted_directory_listing_with_os_listdir('/home/carlos/Dropbox/code/employees/resumeDb/')          
+            renameFiles(ordered_resume_db_list,resume_db_path)
 
             st.rerun()     
+
         else: 
             st.write('Please fill in the form')
 
@@ -445,52 +502,8 @@ if authentication_status:
                 df10b = pd.read_excel(xlsb, 'October')
                 df11b = pd.read_excel(xlsb, 'November')
                 df12b = pd.read_excel(xlsb, 'December')    
-                
-                df_edited = st.data_editor( # data_editor <- permite a edição dos registros do df
-                    df1, # ----------- VARIA CONFORME O MES ----------- #
-                    column_config={
-                    'Name': st.column_config.TextColumn(
-                    'Name'),
-
-                    'Date': st.column_config.DatetimeColumn(
-                    'Date',
-                    min_value=datetime(2023, 6, 1),
-                    max_value=datetime(2025, 1, 1),
-                    format='D MMM YYYY',
-                    step=60),
-
-                    'Start time': st.column_config.TimeColumn(
-                    'Start time',
-                    min_value=time(0, 0, 0),
-                    max_value=time(23, 0, 0),
-                    format='hh:mm a',
-                    step=60),
-
-                    'Finish time': st.column_config.TimeColumn(
-                    'Finish time',
-                    min_value=time(0,0,0),
-                    max_value=time(23,0,0),
-                    format='hh:mm a',
-                    step=60),
-                    
-                    'Other hours': st.column_config.TimeColumn(
-                    'Other hours',
-                    min_value=time(0,0,0),
-                    max_value=time(23,0,0),
-                    format='HH:mm',
-                    step=60),
-
-                    'TOTAL HOURS': st.column_config.TimeColumn(
-                    'TOTAL HOURS',
-                    min_value=time(0,0,0),
-                    max_value=time(23,0,0),
-                    format='HH:mm',
-                    step=60), 
-
-                    },
-                    hide_index=True,
-                    disabled=('Name', 'Date','TOTAL HOURS'),width=1000
-                    )                
+                                
+                df_edited = dateEditor(df1)
 
                 form = st.form('str',border=False)
                                 
@@ -519,7 +532,7 @@ if authentication_status:
                 st.header('Hours Resume')
                 st.write('All hours worked with all other hours within')
                 
-                st.dataframe(resume,hide_index=True)
+                st.dataframe(resume,hide_index=True,width=3000)
                 
                 for i in range(len(df_edited)): # atualizando todos os registros da tabela confome as regras
                     
@@ -576,8 +589,6 @@ if authentication_status:
                         df11b.to_excel(excel_writer, sheet_name='November', index=False)
                         df12b.to_excel(excel_writer, sheet_name='December', index=False)
                         
-                        forceRerun()
-
                         st.rerun()
                                      
             if choice == 'February':
@@ -632,51 +643,7 @@ if authentication_status:
                 df11b = pd.read_excel(xlsb, 'November')
                 df12b = pd.read_excel(xlsb, 'December')    
                 
-                df_edited = st.data_editor( # data_editor <- permite a edição dos registros do df
-                    df2, # ----------- VARIA CONFORME O MES ----------- #
-                    column_config={
-                    'Name': st.column_config.TextColumn(
-                    'Name'),
-
-                    'Date': st.column_config.DatetimeColumn(
-                    'Date',
-                    min_value=datetime(2023, 6, 1),
-                    max_value=datetime(2025, 1, 1),
-                    format='D MMM YYYY',
-                    step=60),
-
-                    'Start time': st.column_config.TimeColumn(
-                    'Start time',
-                    min_value=time(0, 0, 0),
-                    max_value=time(23, 0, 0),
-                    format='hh:mm a',
-                    step=60),
-
-                    'Finish time': st.column_config.TimeColumn(
-                    'Finish time',
-                    min_value=time(0,0,0),
-                    max_value=time(23,0,0),
-                    format='hh:mm a',
-                    step=60),
-                    
-                    'Other hours': st.column_config.TimeColumn(
-                    'Other hours',
-                    min_value=time(0,0,0),
-                    max_value=time(23,0,0),
-                    format='HH:mm',
-                    step=60),
-
-                    'TOTAL HOURS': st.column_config.TimeColumn(
-                    'TOTAL HOURS',
-                    min_value=time(0,0,0),
-                    max_value=time(23,0,0),
-                    format='HH:mm',
-                    step=60), 
-
-                    },
-                    hide_index=True,
-                    disabled=('Name', 'Date','TOTAL HOURS'),width=1000
-                    )                
+                df_edited = dateEditor(df2)
 
                 form = st.form('str',border=False)
                                 
@@ -816,51 +783,7 @@ if authentication_status:
                 df11b = pd.read_excel(xlsb, 'November')
                 df12b = pd.read_excel(xlsb, 'December')    
                 
-                df_edited = st.data_editor( # data_editor <- permite a edição dos registros do df
-                    df1, # ----------- VARIA CONFORME O MES ----------- #
-                    column_config={
-                    'Name': st.column_config.TextColumn(
-                    'Name'),
-
-                    'Date': st.column_config.DatetimeColumn(
-                    'Date',
-                    min_value=datetime(2023, 6, 1),
-                    max_value=datetime(2025, 1, 1),
-                    format='D MMM YYYY',
-                    step=60),
-
-                    'Start time': st.column_config.TimeColumn(
-                    'Start time',
-                    min_value=time(0, 0, 0),
-                    max_value=time(23, 0, 0),
-                    format='hh:mm a',
-                    step=60),
-
-                    'Finish time': st.column_config.TimeColumn(
-                    'Finish time',
-                    min_value=time(0,0,0),
-                    max_value=time(23,0,0),
-                    format='hh:mm a',
-                    step=60),
-                    
-                    'Other hours': st.column_config.TimeColumn(
-                    'Other hours',
-                    min_value=time(0,0,0),
-                    max_value=time(23,0,0),
-                    format='HH:mm',
-                    step=60),
-
-                    'TOTAL HOURS': st.column_config.TimeColumn(
-                    'TOTAL HOURS',
-                    min_value=time(0,0,0),
-                    max_value=time(23,0,0),
-                    format='HH:mm',
-                    step=60), 
-
-                    },
-                    hide_index=True,
-                    disabled=('Name', 'Date','TOTAL HOURS'),width=1000
-                    )                
+                df_edited = dateEditor(df3)            
 
                 form = st.form('str',border=False)
                                 
@@ -919,9 +842,9 @@ if authentication_status:
                 if button_press:
 
                     with pd.ExcelWriter(joined_path) as excel_writer: # salvando as mudancas somente do mes requerido no banco de dados principal
-                        df_edited.to_excel(excel_writer, sheet_name='January', index=False) # ----------- VARIA CONFORME O MES ----------- #
+                        df1.to_excel(excel_writer, sheet_name='January', index=False) # ----------- VARIA CONFORME O MES ----------- #
                         df2.to_excel(excel_writer, sheet_name='February', index=False)
-                        df3.to_excel(excel_writer, sheet_name='March', index=False)
+                        df_edited.to_excel(excel_writer, sheet_name='March', index=False)
                         df4.to_excel(excel_writer, sheet_name='April', index=False)
                         df5.to_excel(excel_writer, sheet_name='May', index=False)
                         df6.to_excel(excel_writer, sheet_name='June', index=False)
@@ -933,9 +856,9 @@ if authentication_status:
                         df12.to_excel(excel_writer, sheet_name='December', index=False)
                         
                     with pd.ExcelWriter(joined_pathb) as excel_writer: # salvando as mudancas somente do mes requerido no banco de dados do resumo
-                        resume.to_excel(excel_writer, sheet_name='January', index=False) # ----------- VARIA CONFORME O MES ----------- #
+                        df1b.to_excel(excel_writer, sheet_name='January', index=False) # ----------- VARIA CONFORME O MES ----------- #
                         df2b.to_excel(excel_writer, sheet_name='February', index=False)
-                        df3b.to_excel(excel_writer, sheet_name='March', index=False)
+                        resume.to_excel(excel_writer, sheet_name='March', index=False)
                         df4b.to_excel(excel_writer, sheet_name='April', index=False)
                         df5b.to_excel(excel_writer, sheet_name='May', index=False)
                         df6b.to_excel(excel_writer, sheet_name='June', index=False)
@@ -1000,51 +923,7 @@ if authentication_status:
                 df11b = pd.read_excel(xlsb, 'November')
                 df12b = pd.read_excel(xlsb, 'December')    
                 
-                df_edited = st.data_editor( # data_editor <- permite a edição dos registros do df
-                    df1, # ----------- VARIA CONFORME O MES ----------- #
-                    column_config={
-                    'Name': st.column_config.TextColumn(
-                    'Name'),
-
-                    'Date': st.column_config.DatetimeColumn(
-                    'Date',
-                    min_value=datetime(2023, 6, 1),
-                    max_value=datetime(2025, 1, 1),
-                    format='D MMM YYYY',
-                    step=60),
-
-                    'Start time': st.column_config.TimeColumn(
-                    'Start time',
-                    min_value=time(0, 0, 0),
-                    max_value=time(23, 0, 0),
-                    format='hh:mm a',
-                    step=60),
-
-                    'Finish time': st.column_config.TimeColumn(
-                    'Finish time',
-                    min_value=time(0,0,0),
-                    max_value=time(23,0,0),
-                    format='hh:mm a',
-                    step=60),
-                    
-                    'Other hours': st.column_config.TimeColumn(
-                    'Other hours',
-                    min_value=time(0,0,0),
-                    max_value=time(23,0,0),
-                    format='HH:mm',
-                    step=60),
-
-                    'TOTAL HOURS': st.column_config.TimeColumn(
-                    'TOTAL HOURS',
-                    min_value=time(0,0,0),
-                    max_value=time(23,0,0),
-                    format='HH:mm',
-                    step=60), 
-
-                    },
-                    hide_index=True,
-                    disabled=('Name', 'Date','TOTAL HOURS'),width=1000
-                    )                
+                df_edited = dateEditor(df4)            
 
                 form = st.form('str',border=False)
                                 
@@ -1103,10 +982,10 @@ if authentication_status:
                 if button_press:
 
                     with pd.ExcelWriter(joined_path) as excel_writer: # salvando as mudancas somente do mes requerido no banco de dados principal
-                        df_edited.to_excel(excel_writer, sheet_name='January', index=False) # ----------- VARIA CONFORME O MES ----------- #
+                        df1.to_excel(excel_writer, sheet_name='January', index=False) # ----------- VARIA CONFORME O MES ----------- #
                         df2.to_excel(excel_writer, sheet_name='February', index=False)
                         df3.to_excel(excel_writer, sheet_name='March', index=False)
-                        df4.to_excel(excel_writer, sheet_name='April', index=False)
+                        df_edited.to_excel(excel_writer, sheet_name='April', index=False)
                         df5.to_excel(excel_writer, sheet_name='May', index=False)
                         df6.to_excel(excel_writer, sheet_name='June', index=False)
                         df7.to_excel(excel_writer, sheet_name='July', index=False)
@@ -1117,10 +996,10 @@ if authentication_status:
                         df12.to_excel(excel_writer, sheet_name='December', index=False)
                         
                     with pd.ExcelWriter(joined_pathb) as excel_writer: # salvando as mudancas somente do mes requerido no banco de dados do resumo
-                        resume.to_excel(excel_writer, sheet_name='January', index=False) # ----------- VARIA CONFORME O MES ----------- #
+                        df1b.to_excel(excel_writer, sheet_name='January', index=False) # ----------- VARIA CONFORME O MES ----------- #
                         df2b.to_excel(excel_writer, sheet_name='February', index=False)
                         df3b.to_excel(excel_writer, sheet_name='March', index=False)
-                        df4b.to_excel(excel_writer, sheet_name='April', index=False)
+                        resume.to_excel(excel_writer, sheet_name='April', index=False)
                         df5b.to_excel(excel_writer, sheet_name='May', index=False)
                         df6b.to_excel(excel_writer, sheet_name='June', index=False)
                         df7b.to_excel(excel_writer, sheet_name='July', index=False)
@@ -1184,51 +1063,7 @@ if authentication_status:
                 df11b = pd.read_excel(xlsb, 'November')
                 df12b = pd.read_excel(xlsb, 'December')    
                 
-                df_edited = st.data_editor( # data_editor <- permite a edição dos registros do df
-                    df1, # ----------- VARIA CONFORME O MES ----------- #
-                    column_config={
-                    'Name': st.column_config.TextColumn(
-                    'Name'),
-
-                    'Date': st.column_config.DatetimeColumn(
-                    'Date',
-                    min_value=datetime(2023, 6, 1),
-                    max_value=datetime(2025, 1, 1),
-                    format='D MMM YYYY',
-                    step=60),
-
-                    'Start time': st.column_config.TimeColumn(
-                    'Start time',
-                    min_value=time(0, 0, 0),
-                    max_value=time(23, 0, 0),
-                    format='hh:mm a',
-                    step=60),
-
-                    'Finish time': st.column_config.TimeColumn(
-                    'Finish time',
-                    min_value=time(0,0,0),
-                    max_value=time(23,0,0),
-                    format='hh:mm a',
-                    step=60),
-                    
-                    'Other hours': st.column_config.TimeColumn(
-                    'Other hours',
-                    min_value=time(0,0,0),
-                    max_value=time(23,0,0),
-                    format='HH:mm',
-                    step=60),
-
-                    'TOTAL HOURS': st.column_config.TimeColumn(
-                    'TOTAL HOURS',
-                    min_value=time(0,0,0),
-                    max_value=time(23,0,0),
-                    format='HH:mm',
-                    step=60), 
-
-                    },
-                    hide_index=True,
-                    disabled=('Name', 'Date','TOTAL HOURS'),width=1000
-                    )                
+                df_edited = dateEditor(df5)
 
                 form = st.form('str',border=False)
                                 
@@ -1287,11 +1122,11 @@ if authentication_status:
                 if button_press:
 
                     with pd.ExcelWriter(joined_path) as excel_writer: # salvando as mudancas somente do mes requerido no banco de dados principal
-                        df_edited.to_excel(excel_writer, sheet_name='January', index=False) # ----------- VARIA CONFORME O MES ----------- #
+                        df1.to_excel(excel_writer, sheet_name='January', index=False) # ----------- VARIA CONFORME O MES ----------- #
                         df2.to_excel(excel_writer, sheet_name='February', index=False)
                         df3.to_excel(excel_writer, sheet_name='March', index=False)
                         df4.to_excel(excel_writer, sheet_name='April', index=False)
-                        df5.to_excel(excel_writer, sheet_name='May', index=False)
+                        df_edited.to_excel(excel_writer, sheet_name='May', index=False)
                         df6.to_excel(excel_writer, sheet_name='June', index=False)
                         df7.to_excel(excel_writer, sheet_name='July', index=False)
                         df8.to_excel(excel_writer, sheet_name='August', index=False)
@@ -1301,11 +1136,11 @@ if authentication_status:
                         df12.to_excel(excel_writer, sheet_name='December', index=False)
                         
                     with pd.ExcelWriter(joined_pathb) as excel_writer: # salvando as mudancas somente do mes requerido no banco de dados do resumo
-                        resume.to_excel(excel_writer, sheet_name='January', index=False) # ----------- VARIA CONFORME O MES ----------- #
+                        df1b.to_excel(excel_writer, sheet_name='January', index=False) # ----------- VARIA CONFORME O MES ----------- #
                         df2b.to_excel(excel_writer, sheet_name='February', index=False)
                         df3b.to_excel(excel_writer, sheet_name='March', index=False)
                         df4b.to_excel(excel_writer, sheet_name='April', index=False)
-                        df5b.to_excel(excel_writer, sheet_name='May', index=False)
+                        resume.to_excel(excel_writer, sheet_name='May', index=False)
                         df6b.to_excel(excel_writer, sheet_name='June', index=False)
                         df7b.to_excel(excel_writer, sheet_name='July', index=False)
                         df8b.to_excel(excel_writer, sheet_name='August', index=False)
@@ -1368,51 +1203,7 @@ if authentication_status:
                 df11b = pd.read_excel(xlsb, 'November')
                 df12b = pd.read_excel(xlsb, 'December')    
                 
-                df_edited = st.data_editor( # data_editor <- permite a edição dos registros do df
-                    df1, # ----------- VARIA CONFORME O MES ----------- #
-                    column_config={
-                    'Name': st.column_config.TextColumn(
-                    'Name'),
-
-                    'Date': st.column_config.DatetimeColumn(
-                    'Date',
-                    min_value=datetime(2023, 6, 1),
-                    max_value=datetime(2025, 1, 1),
-                    format='D MMM YYYY',
-                    step=60),
-
-                    'Start time': st.column_config.TimeColumn(
-                    'Start time',
-                    min_value=time(0, 0, 0),
-                    max_value=time(23, 0, 0),
-                    format='hh:mm a',
-                    step=60),
-
-                    'Finish time': st.column_config.TimeColumn(
-                    'Finish time',
-                    min_value=time(0,0,0),
-                    max_value=time(23,0,0),
-                    format='hh:mm a',
-                    step=60),
-                    
-                    'Other hours': st.column_config.TimeColumn(
-                    'Other hours',
-                    min_value=time(0,0,0),
-                    max_value=time(23,0,0),
-                    format='HH:mm',
-                    step=60),
-
-                    'TOTAL HOURS': st.column_config.TimeColumn(
-                    'TOTAL HOURS',
-                    min_value=time(0,0,0),
-                    max_value=time(23,0,0),
-                    format='HH:mm',
-                    step=60), 
-
-                    },
-                    hide_index=True,
-                    disabled=('Name', 'Date','TOTAL HOURS'),width=1000
-                    )                
+                df_edited = dateEditor(df6)              
 
                 form = st.form('str',border=False)
                                 
@@ -1441,7 +1232,7 @@ if authentication_status:
                 st.header('Hours Resume')
                 st.write('All hours worked with all other hours within')
                 
-                st.dataframe(resume,hide_index=True)
+                st.dataframe(resume,hide_index=True,width=3000)
                 
                 for i in range(len(df_edited)): # atualizando todos os registros da tabela confome as regras
                     
@@ -1471,12 +1262,12 @@ if authentication_status:
                 if button_press:
 
                     with pd.ExcelWriter(joined_path) as excel_writer: # salvando as mudancas somente do mes requerido no banco de dados principal
-                        df_edited.to_excel(excel_writer, sheet_name='January', index=False) # ----------- VARIA CONFORME O MES ----------- #
+                        df1.to_excel(excel_writer, sheet_name='January', index=False) # ----------- VARIA CONFORME O MES ----------- #
                         df2.to_excel(excel_writer, sheet_name='February', index=False)
                         df3.to_excel(excel_writer, sheet_name='March', index=False)
                         df4.to_excel(excel_writer, sheet_name='April', index=False)
                         df5.to_excel(excel_writer, sheet_name='May', index=False)
-                        df6.to_excel(excel_writer, sheet_name='June', index=False)
+                        df_edited.to_excel(excel_writer, sheet_name='June', index=False)
                         df7.to_excel(excel_writer, sheet_name='July', index=False)
                         df8.to_excel(excel_writer, sheet_name='August', index=False)
                         df9.to_excel(excel_writer, sheet_name='Setember', index=False)
@@ -1485,12 +1276,12 @@ if authentication_status:
                         df12.to_excel(excel_writer, sheet_name='December', index=False)
                         
                     with pd.ExcelWriter(joined_pathb) as excel_writer: # salvando as mudancas somente do mes requerido no banco de dados do resumo
-                        resume.to_excel(excel_writer, sheet_name='January', index=False) # ----------- VARIA CONFORME O MES ----------- #
+                        df1b.to_excel(excel_writer, sheet_name='January', index=False) # ----------- VARIA CONFORME O MES ----------- #
                         df2b.to_excel(excel_writer, sheet_name='February', index=False)
                         df3b.to_excel(excel_writer, sheet_name='March', index=False)
                         df4b.to_excel(excel_writer, sheet_name='April', index=False)
                         df5b.to_excel(excel_writer, sheet_name='May', index=False)
-                        df6b.to_excel(excel_writer, sheet_name='June', index=False)
+                        resume.to_excel(excel_writer, sheet_name='June', index=False)
                         df7b.to_excel(excel_writer, sheet_name='July', index=False)
                         df8b.to_excel(excel_writer, sheet_name='August', index=False)
                         df9b.to_excel(excel_writer, sheet_name='Setember', index=False)
@@ -1552,51 +1343,7 @@ if authentication_status:
                 df11b = pd.read_excel(xlsb, 'November')
                 df12b = pd.read_excel(xlsb, 'December')    
                 
-                df_edited = st.data_editor( # data_editor <- permite a edição dos registros do df
-                    df1, # ----------- VARIA CONFORME O MES ----------- #
-                    column_config={
-                    'Name': st.column_config.TextColumn(
-                    'Name'),
-
-                    'Date': st.column_config.DatetimeColumn(
-                    'Date',
-                    min_value=datetime(2023, 6, 1),
-                    max_value=datetime(2025, 1, 1),
-                    format='D MMM YYYY',
-                    step=60),
-
-                    'Start time': st.column_config.TimeColumn(
-                    'Start time',
-                    min_value=time(0, 0, 0),
-                    max_value=time(23, 0, 0),
-                    format='hh:mm a',
-                    step=60),
-
-                    'Finish time': st.column_config.TimeColumn(
-                    'Finish time',
-                    min_value=time(0,0,0),
-                    max_value=time(23,0,0),
-                    format='hh:mm a',
-                    step=60),
-                    
-                    'Other hours': st.column_config.TimeColumn(
-                    'Other hours',
-                    min_value=time(0,0,0),
-                    max_value=time(23,0,0),
-                    format='HH:mm',
-                    step=60),
-
-                    'TOTAL HOURS': st.column_config.TimeColumn(
-                    'TOTAL HOURS',
-                    min_value=time(0,0,0),
-                    max_value=time(23,0,0),
-                    format='HH:mm',
-                    step=60), 
-
-                    },
-                    hide_index=True,
-                    disabled=('Name', 'Date','TOTAL HOURS'),width=1000
-                    )                
+                df_edited = dateEditor(df7)             
 
                 form = st.form('str',border=False)
                                 
@@ -1625,7 +1372,7 @@ if authentication_status:
                 st.header('Hours Resume')
                 st.write('All hours worked with all other hours within')
                 
-                st.dataframe(resume,hide_index=True)
+                st.dataframe(resume,hide_index=True,width=3000)
                 
                 for i in range(len(df_edited)): # atualizando todos os registros da tabela confome as regras
                     
@@ -1655,13 +1402,13 @@ if authentication_status:
                 if button_press:
 
                     with pd.ExcelWriter(joined_path) as excel_writer: # salvando as mudancas somente do mes requerido no banco de dados principal
-                        df_edited.to_excel(excel_writer, sheet_name='January', index=False) # ----------- VARIA CONFORME O MES ----------- #
+                        df1.to_excel(excel_writer, sheet_name='January', index=False) # ----------- VARIA CONFORME O MES ----------- #
                         df2.to_excel(excel_writer, sheet_name='February', index=False)
                         df3.to_excel(excel_writer, sheet_name='March', index=False)
                         df4.to_excel(excel_writer, sheet_name='April', index=False)
                         df5.to_excel(excel_writer, sheet_name='May', index=False)
                         df6.to_excel(excel_writer, sheet_name='June', index=False)
-                        df7.to_excel(excel_writer, sheet_name='July', index=False)
+                        df_edited.to_excel(excel_writer, sheet_name='July', index=False)
                         df8.to_excel(excel_writer, sheet_name='August', index=False)
                         df9.to_excel(excel_writer, sheet_name='Setember', index=False)
                         df10.to_excel(excel_writer, sheet_name='October', index=False)
@@ -1669,13 +1416,13 @@ if authentication_status:
                         df12.to_excel(excel_writer, sheet_name='December', index=False)
                         
                     with pd.ExcelWriter(joined_pathb) as excel_writer: # salvando as mudancas somente do mes requerido no banco de dados do resumo
-                        resume.to_excel(excel_writer, sheet_name='January', index=False) # ----------- VARIA CONFORME O MES ----------- #
+                        df1b.to_excel(excel_writer, sheet_name='January', index=False) # ----------- VARIA CONFORME O MES ----------- #
                         df2b.to_excel(excel_writer, sheet_name='February', index=False)
                         df3b.to_excel(excel_writer, sheet_name='March', index=False)
                         df4b.to_excel(excel_writer, sheet_name='April', index=False)
                         df5b.to_excel(excel_writer, sheet_name='May', index=False)
                         df6b.to_excel(excel_writer, sheet_name='June', index=False)
-                        df7b.to_excel(excel_writer, sheet_name='July', index=False)
+                        resume.to_excel(excel_writer, sheet_name='July', index=False)
                         df8b.to_excel(excel_writer, sheet_name='August', index=False)
                         df9b.to_excel(excel_writer, sheet_name='Setember', index=False)
                         df10b.to_excel(excel_writer, sheet_name='October', index=False)
@@ -1736,51 +1483,7 @@ if authentication_status:
                 df11b = pd.read_excel(xlsb, 'November')
                 df12b = pd.read_excel(xlsb, 'December')    
                 
-                df_edited = st.data_editor( # data_editor <- permite a edição dos registros do df
-                    df1, # ----------- VARIA CONFORME O MES ----------- #
-                    column_config={
-                    'Name': st.column_config.TextColumn(
-                    'Name'),
-
-                    'Date': st.column_config.DatetimeColumn(
-                    'Date',
-                    min_value=datetime(2023, 6, 1),
-                    max_value=datetime(2025, 1, 1),
-                    format='D MMM YYYY',
-                    step=60),
-
-                    'Start time': st.column_config.TimeColumn(
-                    'Start time',
-                    min_value=time(0, 0, 0),
-                    max_value=time(23, 0, 0),
-                    format='hh:mm a',
-                    step=60),
-
-                    'Finish time': st.column_config.TimeColumn(
-                    'Finish time',
-                    min_value=time(0,0,0),
-                    max_value=time(23,0,0),
-                    format='hh:mm a',
-                    step=60),
-                    
-                    'Other hours': st.column_config.TimeColumn(
-                    'Other hours',
-                    min_value=time(0,0,0),
-                    max_value=time(23,0,0),
-                    format='HH:mm',
-                    step=60),
-
-                    'TOTAL HOURS': st.column_config.TimeColumn(
-                    'TOTAL HOURS',
-                    min_value=time(0,0,0),
-                    max_value=time(23,0,0),
-                    format='HH:mm',
-                    step=60), 
-
-                    },
-                    hide_index=True,
-                    disabled=('Name', 'Date','TOTAL HOURS'),width=1000
-                    )                
+                df_edited = dateEditor(df8)            
 
                 form = st.form('str',border=False)
                                 
@@ -1809,7 +1512,7 @@ if authentication_status:
                 st.header('Hours Resume')
                 st.write('All hours worked with all other hours within')
                 
-                st.dataframe(resume,hide_index=True)
+                st.dataframe(resume,hide_index=True,width=3000)
                 
                 for i in range(len(df_edited)): # atualizando todos os registros da tabela confome as regras
                     
@@ -1839,28 +1542,28 @@ if authentication_status:
                 if button_press:
 
                     with pd.ExcelWriter(joined_path) as excel_writer: # salvando as mudancas somente do mes requerido no banco de dados principal
-                        df_edited.to_excel(excel_writer, sheet_name='January', index=False) # ----------- VARIA CONFORME O MES ----------- #
+                        df1.to_excel(excel_writer, sheet_name='January', index=False) # ----------- VARIA CONFORME O MES ----------- #
                         df2.to_excel(excel_writer, sheet_name='February', index=False)
                         df3.to_excel(excel_writer, sheet_name='March', index=False)
                         df4.to_excel(excel_writer, sheet_name='April', index=False)
                         df5.to_excel(excel_writer, sheet_name='May', index=False)
                         df6.to_excel(excel_writer, sheet_name='June', index=False)
                         df7.to_excel(excel_writer, sheet_name='July', index=False)
-                        df8.to_excel(excel_writer, sheet_name='August', index=False)
+                        df_edited.to_excel(excel_writer, sheet_name='August', index=False)
                         df9.to_excel(excel_writer, sheet_name='Setember', index=False)
                         df10.to_excel(excel_writer, sheet_name='October', index=False)
                         df11.to_excel(excel_writer, sheet_name='November', index=False)
                         df12.to_excel(excel_writer, sheet_name='December', index=False)
                         
                     with pd.ExcelWriter(joined_pathb) as excel_writer: # salvando as mudancas somente do mes requerido no banco de dados do resumo
-                        resume.to_excel(excel_writer, sheet_name='January', index=False) # ----------- VARIA CONFORME O MES ----------- #
+                        df1.to_excel(excel_writer, sheet_name='January', index=False) # ----------- VARIA CONFORME O MES ----------- #
                         df2b.to_excel(excel_writer, sheet_name='February', index=False)
                         df3b.to_excel(excel_writer, sheet_name='March', index=False)
                         df4b.to_excel(excel_writer, sheet_name='April', index=False)
                         df5b.to_excel(excel_writer, sheet_name='May', index=False)
                         df6b.to_excel(excel_writer, sheet_name='June', index=False)
                         df7b.to_excel(excel_writer, sheet_name='July', index=False)
-                        df8b.to_excel(excel_writer, sheet_name='August', index=False)
+                        resume.to_excel(excel_writer, sheet_name='August', index=False)
                         df9b.to_excel(excel_writer, sheet_name='Setember', index=False)
                         df10b.to_excel(excel_writer, sheet_name='October', index=False)
                         df11b.to_excel(excel_writer, sheet_name='November', index=False)
@@ -1920,51 +1623,7 @@ if authentication_status:
                 df11b = pd.read_excel(xlsb, 'November')
                 df12b = pd.read_excel(xlsb, 'December')    
                 
-                df_edited = st.data_editor( # data_editor <- permite a edição dos registros do df
-                    df1, # ----------- VARIA CONFORME O MES ----------- #
-                    column_config={
-                    'Name': st.column_config.TextColumn(
-                    'Name'),
-
-                    'Date': st.column_config.DatetimeColumn(
-                    'Date',
-                    min_value=datetime(2023, 6, 1),
-                    max_value=datetime(2025, 1, 1),
-                    format='D MMM YYYY',
-                    step=60),
-
-                    'Start time': st.column_config.TimeColumn(
-                    'Start time',
-                    min_value=time(0, 0, 0),
-                    max_value=time(23, 0, 0),
-                    format='hh:mm a',
-                    step=60),
-
-                    'Finish time': st.column_config.TimeColumn(
-                    'Finish time',
-                    min_value=time(0,0,0),
-                    max_value=time(23,0,0),
-                    format='hh:mm a',
-                    step=60),
-                    
-                    'Other hours': st.column_config.TimeColumn(
-                    'Other hours',
-                    min_value=time(0,0,0),
-                    max_value=time(23,0,0),
-                    format='HH:mm',
-                    step=60),
-
-                    'TOTAL HOURS': st.column_config.TimeColumn(
-                    'TOTAL HOURS',
-                    min_value=time(0,0,0),
-                    max_value=time(23,0,0),
-                    format='HH:mm',
-                    step=60), 
-
-                    },
-                    hide_index=True,
-                    disabled=('Name', 'Date','TOTAL HOURS'),width=1000
-                    )                
+                df_edited = dateEditor(df9)              
 
                 form = st.form('str',border=False)
                                 
@@ -1993,7 +1652,7 @@ if authentication_status:
                 st.header('Hours Resume')
                 st.write('All hours worked with all other hours within')
                 
-                st.dataframe(resume,hide_index=True)
+                st.dataframe(resume,hide_index=True,width=3000)
                 
                 for i in range(len(df_edited)): # atualizando todos os registros da tabela confome as regras
                     
@@ -2023,7 +1682,7 @@ if authentication_status:
                 if button_press:
 
                     with pd.ExcelWriter(joined_path) as excel_writer: # salvando as mudancas somente do mes requerido no banco de dados principal
-                        df_edited.to_excel(excel_writer, sheet_name='January', index=False) # ----------- VARIA CONFORME O MES ----------- #
+                        df1.to_excel(excel_writer, sheet_name='January', index=False) # ----------- VARIA CONFORME O MES ----------- #
                         df2.to_excel(excel_writer, sheet_name='February', index=False)
                         df3.to_excel(excel_writer, sheet_name='March', index=False)
                         df4.to_excel(excel_writer, sheet_name='April', index=False)
@@ -2031,13 +1690,13 @@ if authentication_status:
                         df6.to_excel(excel_writer, sheet_name='June', index=False)
                         df7.to_excel(excel_writer, sheet_name='July', index=False)
                         df8.to_excel(excel_writer, sheet_name='August', index=False)
-                        df9.to_excel(excel_writer, sheet_name='Setember', index=False)
+                        df_edited.to_excel(excel_writer, sheet_name='Setember', index=False)
                         df10.to_excel(excel_writer, sheet_name='October', index=False)
                         df11.to_excel(excel_writer, sheet_name='November', index=False)
                         df12.to_excel(excel_writer, sheet_name='December', index=False)
                         
                     with pd.ExcelWriter(joined_pathb) as excel_writer: # salvando as mudancas somente do mes requerido no banco de dados do resumo
-                        resume.to_excel(excel_writer, sheet_name='January', index=False) # ----------- VARIA CONFORME O MES ----------- #
+                        df1b.to_excel(excel_writer, sheet_name='January', index=False) # ----------- VARIA CONFORME O MES ----------- #
                         df2b.to_excel(excel_writer, sheet_name='February', index=False)
                         df3b.to_excel(excel_writer, sheet_name='March', index=False)
                         df4b.to_excel(excel_writer, sheet_name='April', index=False)
@@ -2045,7 +1704,7 @@ if authentication_status:
                         df6b.to_excel(excel_writer, sheet_name='June', index=False)
                         df7b.to_excel(excel_writer, sheet_name='July', index=False)
                         df8b.to_excel(excel_writer, sheet_name='August', index=False)
-                        df9b.to_excel(excel_writer, sheet_name='Setember', index=False)
+                        resume.to_excel(excel_writer, sheet_name='Setember', index=False)
                         df10b.to_excel(excel_writer, sheet_name='October', index=False)
                         df11b.to_excel(excel_writer, sheet_name='November', index=False)
                         df12b.to_excel(excel_writer, sheet_name='December', index=False)
@@ -2104,51 +1763,7 @@ if authentication_status:
                 df11b = pd.read_excel(xlsb, 'November')
                 df12b = pd.read_excel(xlsb, 'December')    
                 
-                df_edited = st.data_editor( # data_editor <- permite a edição dos registros do df
-                    df1, # ----------- VARIA CONFORME O MES ----------- #
-                    column_config={
-                    'Name': st.column_config.TextColumn(
-                    'Name'),
-
-                    'Date': st.column_config.DatetimeColumn(
-                    'Date',
-                    min_value=datetime(2023, 6, 1),
-                    max_value=datetime(2025, 1, 1),
-                    format='D MMM YYYY',
-                    step=60),
-
-                    'Start time': st.column_config.TimeColumn(
-                    'Start time',
-                    min_value=time(0, 0, 0),
-                    max_value=time(23, 0, 0),
-                    format='hh:mm a',
-                    step=60),
-
-                    'Finish time': st.column_config.TimeColumn(
-                    'Finish time',
-                    min_value=time(0,0,0),
-                    max_value=time(23,0,0),
-                    format='hh:mm a',
-                    step=60),
-                    
-                    'Other hours': st.column_config.TimeColumn(
-                    'Other hours',
-                    min_value=time(0,0,0),
-                    max_value=time(23,0,0),
-                    format='HH:mm',
-                    step=60),
-
-                    'TOTAL HOURS': st.column_config.TimeColumn(
-                    'TOTAL HOURS',
-                    min_value=time(0,0,0),
-                    max_value=time(23,0,0),
-                    format='HH:mm',
-                    step=60), 
-
-                    },
-                    hide_index=True,
-                    disabled=('Name', 'Date','TOTAL HOURS'),width=1000
-                    )                
+                df_edited = dateEditor(df10)               
 
                 form = st.form('str',border=False)
                                 
@@ -2177,7 +1792,7 @@ if authentication_status:
                 st.header('Hours Resume')
                 st.write('All hours worked with all other hours within')
                 
-                st.dataframe(resume,hide_index=True)
+                st.dataframe(resume,hide_index=True,width=3000)
                 
                 for i in range(len(df_edited)): # atualizando todos os registros da tabela confome as regras
                     
@@ -2207,7 +1822,7 @@ if authentication_status:
                 if button_press:
 
                     with pd.ExcelWriter(joined_path) as excel_writer: # salvando as mudancas somente do mes requerido no banco de dados principal
-                        df_edited.to_excel(excel_writer, sheet_name='January', index=False) # ----------- VARIA CONFORME O MES ----------- #
+                        df1.to_excel(excel_writer, sheet_name='January', index=False) # ----------- VARIA CONFORME O MES ----------- #
                         df2.to_excel(excel_writer, sheet_name='February', index=False)
                         df3.to_excel(excel_writer, sheet_name='March', index=False)
                         df4.to_excel(excel_writer, sheet_name='April', index=False)
@@ -2216,12 +1831,12 @@ if authentication_status:
                         df7.to_excel(excel_writer, sheet_name='July', index=False)
                         df8.to_excel(excel_writer, sheet_name='August', index=False)
                         df9.to_excel(excel_writer, sheet_name='Setember', index=False)
-                        df10.to_excel(excel_writer, sheet_name='October', index=False)
+                        df_edited.to_excel(excel_writer, sheet_name='October', index=False)
                         df11.to_excel(excel_writer, sheet_name='November', index=False)
                         df12.to_excel(excel_writer, sheet_name='December', index=False)
                         
                     with pd.ExcelWriter(joined_pathb) as excel_writer: # salvando as mudancas somente do mes requerido no banco de dados do resumo
-                        resume.to_excel(excel_writer, sheet_name='January', index=False) # ----------- VARIA CONFORME O MES ----------- #
+                        df1b.to_excel(excel_writer, sheet_name='January', index=False) # ----------- VARIA CONFORME O MES ----------- #
                         df2b.to_excel(excel_writer, sheet_name='February', index=False)
                         df3b.to_excel(excel_writer, sheet_name='March', index=False)
                         df4b.to_excel(excel_writer, sheet_name='April', index=False)
@@ -2230,7 +1845,7 @@ if authentication_status:
                         df7b.to_excel(excel_writer, sheet_name='July', index=False)
                         df8b.to_excel(excel_writer, sheet_name='August', index=False)
                         df9b.to_excel(excel_writer, sheet_name='Setember', index=False)
-                        df10b.to_excel(excel_writer, sheet_name='October', index=False)
+                        resume.to_excel(excel_writer, sheet_name='October', index=False)
                         df11b.to_excel(excel_writer, sheet_name='November', index=False)
                         df12b.to_excel(excel_writer, sheet_name='December', index=False)
                         
@@ -2288,51 +1903,7 @@ if authentication_status:
                 df11b = pd.read_excel(xlsb, 'November')
                 df12b = pd.read_excel(xlsb, 'December')    
                 
-                df_edited = st.data_editor( # data_editor <- permite a edição dos registros do df
-                    df1, # ----------- VARIA CONFORME O MES ----------- #
-                    column_config={
-                    'Name': st.column_config.TextColumn(
-                    'Name'),
-
-                    'Date': st.column_config.DatetimeColumn(
-                    'Date',
-                    min_value=datetime(2023, 6, 1),
-                    max_value=datetime(2025, 1, 1),
-                    format='D MMM YYYY',
-                    step=60),
-
-                    'Start time': st.column_config.TimeColumn(
-                    'Start time',
-                    min_value=time(0, 0, 0),
-                    max_value=time(23, 0, 0),
-                    format='hh:mm a',
-                    step=60),
-
-                    'Finish time': st.column_config.TimeColumn(
-                    'Finish time',
-                    min_value=time(0,0,0),
-                    max_value=time(23,0,0),
-                    format='hh:mm a',
-                    step=60),
-                    
-                    'Other hours': st.column_config.TimeColumn(
-                    'Other hours',
-                    min_value=time(0,0,0),
-                    max_value=time(23,0,0),
-                    format='HH:mm',
-                    step=60),
-
-                    'TOTAL HOURS': st.column_config.TimeColumn(
-                    'TOTAL HOURS',
-                    min_value=time(0,0,0),
-                    max_value=time(23,0,0),
-                    format='HH:mm',
-                    step=60), 
-
-                    },
-                    hide_index=True,
-                    disabled=('Name', 'Date','TOTAL HOURS'),width=1000
-                    )                
+                df_edited = dateEditor(df11)                
 
                 form = st.form('str',border=False)
                                 
@@ -2361,7 +1932,7 @@ if authentication_status:
                 st.header('Hours Resume')
                 st.write('All hours worked with all other hours within')
                 
-                st.dataframe(resume,hide_index=True)
+                st.dataframe(resume,hide_index=True,width=3000)
                 
                 for i in range(len(df_edited)): # atualizando todos os registros da tabela confome as regras
                     
@@ -2391,7 +1962,7 @@ if authentication_status:
                 if button_press:
 
                     with pd.ExcelWriter(joined_path) as excel_writer: # salvando as mudancas somente do mes requerido no banco de dados principal
-                        df_edited.to_excel(excel_writer, sheet_name='January', index=False) # ----------- VARIA CONFORME O MES ----------- #
+                        df1.to_excel(excel_writer, sheet_name='January', index=False) # ----------- VARIA CONFORME O MES ----------- #
                         df2.to_excel(excel_writer, sheet_name='February', index=False)
                         df3.to_excel(excel_writer, sheet_name='March', index=False)
                         df4.to_excel(excel_writer, sheet_name='April', index=False)
@@ -2401,11 +1972,11 @@ if authentication_status:
                         df8.to_excel(excel_writer, sheet_name='August', index=False)
                         df9.to_excel(excel_writer, sheet_name='Setember', index=False)
                         df10.to_excel(excel_writer, sheet_name='October', index=False)
-                        df11.to_excel(excel_writer, sheet_name='November', index=False)
+                        df_edited.to_excel(excel_writer, sheet_name='November', index=False)
                         df12.to_excel(excel_writer, sheet_name='December', index=False)
                         
                     with pd.ExcelWriter(joined_pathb) as excel_writer: # salvando as mudancas somente do mes requerido no banco de dados do resumo
-                        resume.to_excel(excel_writer, sheet_name='January', index=False) # ----------- VARIA CONFORME O MES ----------- #
+                        df1b.to_excel(excel_writer, sheet_name='January', index=False) # ----------- VARIA CONFORME O MES ----------- #
                         df2b.to_excel(excel_writer, sheet_name='February', index=False)
                         df3b.to_excel(excel_writer, sheet_name='March', index=False)
                         df4b.to_excel(excel_writer, sheet_name='April', index=False)
@@ -2415,7 +1986,7 @@ if authentication_status:
                         df8b.to_excel(excel_writer, sheet_name='August', index=False)
                         df9b.to_excel(excel_writer, sheet_name='Setember', index=False)
                         df10b.to_excel(excel_writer, sheet_name='October', index=False)
-                        df11b.to_excel(excel_writer, sheet_name='November', index=False)
+                        resume.to_excel(excel_writer, sheet_name='November', index=False)
                         df12b.to_excel(excel_writer, sheet_name='December', index=False)
                         
                         st.rerun()
@@ -2472,51 +2043,7 @@ if authentication_status:
                 df11b = pd.read_excel(xlsb, 'November')
                 df12b = pd.read_excel(xlsb, 'December')    
                 
-                df_edited = st.data_editor( # data_editor <- permite a edição dos registros do df
-                    df1, # ----------- VARIA CONFORME O MES ----------- #
-                    column_config={
-                    'Name': st.column_config.TextColumn(
-                    'Name'),
-
-                    'Date': st.column_config.DatetimeColumn(
-                    'Date',
-                    min_value=datetime(2023, 6, 1),
-                    max_value=datetime(2025, 1, 1),
-                    format='D MMM YYYY',
-                    step=60),
-
-                    'Start time': st.column_config.TimeColumn(
-                    'Start time',
-                    min_value=time(0, 0, 0),
-                    max_value=time(23, 0, 0),
-                    format='hh:mm a',
-                    step=60),
-
-                    'Finish time': st.column_config.TimeColumn(
-                    'Finish time',
-                    min_value=time(0,0,0),
-                    max_value=time(23,0,0),
-                    format='hh:mm a',
-                    step=60),
-                    
-                    'Other hours': st.column_config.TimeColumn(
-                    'Other hours',
-                    min_value=time(0,0,0),
-                    max_value=time(23,0,0),
-                    format='HH:mm',
-                    step=60),
-
-                    'TOTAL HOURS': st.column_config.TimeColumn(
-                    'TOTAL HOURS',
-                    min_value=time(0,0,0),
-                    max_value=time(23,0,0),
-                    format='HH:mm',
-                    step=60), 
-
-                    },
-                    hide_index=True,
-                    disabled=('Name', 'Date','TOTAL HOURS'),width=1000
-                    )                
+                df_edited = dateEditor(df12)                
 
                 form = st.form('str',border=False)
                                 
@@ -2545,7 +2072,7 @@ if authentication_status:
                 st.header('Hours Resume')
                 st.write('All hours worked with all other hours within')
                 
-                st.dataframe(resume,hide_index=True)
+                st.dataframe(resume,hide_index=True,width=3000)
                 
                 for i in range(len(df_edited)): # atualizando todos os registros da tabela confome as regras
                     
@@ -2575,7 +2102,7 @@ if authentication_status:
                 if button_press:
 
                     with pd.ExcelWriter(joined_path) as excel_writer: # salvando as mudancas somente do mes requerido no banco de dados principal
-                        df_edited.to_excel(excel_writer, sheet_name='January', index=False) # ----------- VARIA CONFORME O MES ----------- #
+                        df1.to_excel(excel_writer, sheet_name='January', index=False) # ----------- VARIA CONFORME O MES ----------- #
                         df2.to_excel(excel_writer, sheet_name='February', index=False)
                         df3.to_excel(excel_writer, sheet_name='March', index=False)
                         df4.to_excel(excel_writer, sheet_name='April', index=False)
@@ -2586,10 +2113,10 @@ if authentication_status:
                         df9.to_excel(excel_writer, sheet_name='Setember', index=False)
                         df10.to_excel(excel_writer, sheet_name='October', index=False)
                         df11.to_excel(excel_writer, sheet_name='November', index=False)
-                        df12.to_excel(excel_writer, sheet_name='December', index=False)
+                        df_edited.to_excel(excel_writer, sheet_name='December', index=False)
                         
                     with pd.ExcelWriter(joined_pathb) as excel_writer: # salvando as mudancas somente do mes requerido no banco de dados do resumo
-                        resume.to_excel(excel_writer, sheet_name='January', index=False) # ----------- VARIA CONFORME O MES ----------- #
+                        df1b.to_excel(excel_writer, sheet_name='January', index=False) # ----------- VARIA CONFORME O MES ----------- #
                         df2b.to_excel(excel_writer, sheet_name='February', index=False)
                         df3b.to_excel(excel_writer, sheet_name='March', index=False)
                         df4b.to_excel(excel_writer, sheet_name='April', index=False)
@@ -2600,6 +2127,6 @@ if authentication_status:
                         df9b.to_excel(excel_writer, sheet_name='Setember', index=False)
                         df10b.to_excel(excel_writer, sheet_name='October', index=False)
                         df11b.to_excel(excel_writer, sheet_name='November', index=False)
-                        df12b.to_excel(excel_writer, sheet_name='December', index=False)
+                        resume.to_excel(excel_writer, sheet_name='December', index=False)
                         
                         st.rerun()
