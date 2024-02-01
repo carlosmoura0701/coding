@@ -40,12 +40,12 @@ from functions import hourToMinute
 # pip install jupyter
    
 # ------- paths ------- #
-        
-resume_db_path = '/home/carlos/Dropbox/code/employees/resumeDb/'
-employee_resume_db_path = '/home/carlos/Dropbox/code/employees/csv/_resume.csv'
 
-db_path = '/home/carlos/Dropbox/code/employees/db/'
-employee_path = '/home/carlos/Dropbox/code/employees/csv/_employees.csv'
+resume_db_path = 'employees/resumeDb'
+employee_resume_db_path = 'employees/csv/_resume.csv'
+
+db_path = 'employees/db'
+employee_path = 'employees/csv/_employees.csv'
     
 # ----------------------- main ----------------------- #
     
