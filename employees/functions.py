@@ -9,8 +9,8 @@ from pandas import DataFrame
 def hourToMinute(min): # calculadora de minutos para horas
     h=min//60
     m=min%60
-    total = time(h,m,0)
-    return(total)
+
+    return "%02d:%02d" % (h, m) 
 
 def hourCalculator(col,df_edited): # recebe a coluna para calcular o total de horas e minutos nela
     hour = int(0)
@@ -28,7 +28,7 @@ def resumeDfCreate():
         'Name':[],
         'Month':[datetime],
         'Designation':[],
-        'Total hours worked':[datetime],
+        'Total hours worked':[],
         'Daily rate':[int],
         'Regular hours':[datetime],
         'Total Payable':[float]},index=[])
@@ -165,7 +165,7 @@ def dateEditor(df):
     'TOTAL HOURS': st.column_config.TimeColumn(
     'TOTAL HOURS',
     min_value=time(0,0,0),
-    max_value=time(23,0,0),
+    #max_value=time(23,0,0),
     format='HH:mm',
     step=60), 
 
