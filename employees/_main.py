@@ -40,7 +40,7 @@ from functions import hourToMinute
 # pip install jupyter
    
 # ------- paths ------- #
-
+        
 resume_db_path = 'employees/resumeDb'
 employee_resume_db_path = 'employees/csv/_resume.csv'
 
@@ -377,22 +377,19 @@ if authentication_status:
                 totalNormalTime = hourCalculator(9,df_edited) # coluna de horas totais
                 totalExtraTime = hourCalculator(8,df_edited) # coluna de horas extras
 
+                daily_rate_local = dfNames.loc[0,'Daily rate'] 
+                regular_hours_local = dfNames.loc[0,'Regular hours']
+
                 resume.loc[0,'Name'] = df_edited.loc[0,'Name']
                 resume.loc[0,'Month'] = choice
                 resume.loc[0,'Designation'] =  dfNames.loc[0,'Designation'] 
-                resume.loc[0,'Regular hours'] =  dfNames.loc[0,'Regular hours']
-                resume.loc[0,'Total hours worked'] = hourToMinute(totalNormalTime)
-                resume.loc[0,'Daily rate'] = dfNames.loc[0,'Daily rate'] 
+                resume.loc[0,'Regular hours'] = regular_hours_local 
+                resume.loc[0,'Total hours worked'] = hourToMinute(totalNormalTime) 
+                resume.loc[0,'Daily rate'] = daily_rate_local
                 
-                hourPayment = ((resume.loc[0,'Total hours worked']).hour)*((dfNames.loc[0,'Daily rate']/dfNames.loc[0,'Regular hours'])) # totalHorasTrabalhada  (diaria/totalDiasDiaria)
+                payablePerMinute = (daily_rate_local / (regular_hours_local*60))*totalNormalTime # calculo do valor a ser recebido por todos os minutos trabalhados no mes
 
-                totalHours = hourPayment # total pago por hora
-
-                totalMinutes = ((dfNames.loc[0,'Daily rate']/dfNames.loc[0,'Regular hours'])/60)*(resume.loc[0,'Total hours worked'].minute) # total pago por minuto (diaria/totalDiasDiaria/60)*quantidade de minutos que sobrou
-
-                totalPayable = totalHours + totalMinutes # pagamento total, ja calculado horas e minutos trabalhados
-
-                resume.loc[0,'Total Payable'] = totalPayable
+                resume.loc[0,'Total Payable'] = payablePerMinute
 
                 st.header('Hours Resume')
                 st.write('All hours worked with all other hours within')
@@ -517,22 +514,19 @@ if authentication_status:
                 totalNormalTime = hourCalculator(9,df_edited) # coluna de horas totais
                 totalExtraTime = hourCalculator(8,df_edited) # coluna de horas extras
 
+                daily_rate_local = dfNames.loc[0,'Daily rate'] 
+                regular_hours_local = dfNames.loc[0,'Regular hours']
+
                 resume.loc[0,'Name'] = df_edited.loc[0,'Name']
                 resume.loc[0,'Month'] = choice
                 resume.loc[0,'Designation'] =  dfNames.loc[0,'Designation'] 
-                resume.loc[0,'Regular hours'] =  dfNames.loc[0,'Regular hours']
-                resume.loc[0,'Total hours worked'] = hourToMinute(totalNormalTime)
-                resume.loc[0,'Daily rate'] = dfNames.loc[0,'Daily rate'] 
+                resume.loc[0,'Regular hours'] = regular_hours_local 
+                resume.loc[0,'Total hours worked'] = hourToMinute(totalNormalTime) 
+                resume.loc[0,'Daily rate'] = daily_rate_local
                 
-                hourPayment = ((resume.loc[0,'Total hours worked']).hour)*((dfNames.loc[0,'Daily rate']/dfNames.loc[0,'Regular hours'])) # totalHorasTrabalhada  (diaria/totalDiasDiaria)
+                payablePerMinute = (daily_rate_local / (regular_hours_local*60))*totalNormalTime
 
-                totalHours = hourPayment # total pago por hora
-
-                totalMinutes = ((dfNames.loc[0,'Daily rate']/dfNames.loc[0,'Regular hours'])/60)*(resume.loc[0,'Total hours worked'].minute) # total pago por minuto (diaria/totalDiasDiaria/60)*quantidade de minutos que sobrou
-
-                totalPayable = totalHours + totalMinutes # pagamento total, ja calculado horas e minutos trabalhados
-
-                resume.loc[0,'Total Payable'] = totalPayable
+                resume.loc[0,'Total Payable'] = payablePerMinute
 
                 st.header('Hours Resume')
                 st.write('All hours worked with all other hours within')
@@ -657,22 +651,19 @@ if authentication_status:
                 totalNormalTime = hourCalculator(9,df_edited) # coluna de horas totais
                 totalExtraTime = hourCalculator(8,df_edited) # coluna de horas extras
 
+                daily_rate_local = dfNames.loc[0,'Daily rate'] 
+                regular_hours_local = dfNames.loc[0,'Regular hours']
+
                 resume.loc[0,'Name'] = df_edited.loc[0,'Name']
                 resume.loc[0,'Month'] = choice
                 resume.loc[0,'Designation'] =  dfNames.loc[0,'Designation'] 
-                resume.loc[0,'Regular hours'] =  dfNames.loc[0,'Regular hours']
-                resume.loc[0,'Total hours worked'] = hourToMinute(totalNormalTime)
-                resume.loc[0,'Daily rate'] = dfNames.loc[0,'Daily rate'] 
+                resume.loc[0,'Regular hours'] = regular_hours_local 
+                resume.loc[0,'Total hours worked'] = hourToMinute(totalNormalTime) 
+                resume.loc[0,'Daily rate'] = daily_rate_local
                 
-                hourPayment = ((resume.loc[0,'Total hours worked']).hour)*((dfNames.loc[0,'Daily rate']/dfNames.loc[0,'Regular hours'])) # totalHorasTrabalhada  (diaria/totalDiasDiaria)
+                payablePerMinute = (daily_rate_local / (regular_hours_local*60))*totalNormalTime
 
-                totalHours = hourPayment # total pago por hora
-
-                totalMinutes = ((dfNames.loc[0,'Daily rate']/dfNames.loc[0,'Regular hours'])/60)*(resume.loc[0,'Total hours worked'].minute) # total pago por minuto (diaria/totalDiasDiaria/60)*quantidade de minutos que sobrou
-
-                totalPayable = totalHours + totalMinutes # pagamento total, ja calculado horas e minutos trabalhados
-
-                resume.loc[0,'Total Payable'] = totalPayable
+                resume.loc[0,'Total Payable'] = payablePerMinute
 
                 st.header('Hours Resume')
                 st.write('All hours worked with all other hours within')
@@ -797,22 +788,19 @@ if authentication_status:
                 totalNormalTime = hourCalculator(9,df_edited) # coluna de horas totais
                 totalExtraTime = hourCalculator(8,df_edited) # coluna de horas extras
 
+                daily_rate_local = dfNames.loc[0,'Daily rate'] 
+                regular_hours_local = dfNames.loc[0,'Regular hours']
+
                 resume.loc[0,'Name'] = df_edited.loc[0,'Name']
                 resume.loc[0,'Month'] = choice
                 resume.loc[0,'Designation'] =  dfNames.loc[0,'Designation'] 
-                resume.loc[0,'Regular hours'] =  dfNames.loc[0,'Regular hours']
-                resume.loc[0,'Total hours worked'] = hourToMinute(totalNormalTime)
-                resume.loc[0,'Daily rate'] = dfNames.loc[0,'Daily rate'] 
+                resume.loc[0,'Regular hours'] = regular_hours_local 
+                resume.loc[0,'Total hours worked'] = hourToMinute(totalNormalTime) 
+                resume.loc[0,'Daily rate'] = daily_rate_local
                 
-                hourPayment = ((resume.loc[0,'Total hours worked']).hour)*((dfNames.loc[0,'Daily rate']/dfNames.loc[0,'Regular hours'])) # totalHorasTrabalhada  (diaria/totalDiasDiaria)
+                payablePerMinute = (daily_rate_local / (regular_hours_local*60))*totalNormalTime
 
-                totalHours = hourPayment # total pago por hora
-
-                totalMinutes = ((dfNames.loc[0,'Daily rate']/dfNames.loc[0,'Regular hours'])/60)*(resume.loc[0,'Total hours worked'].minute) # total pago por minuto (diaria/totalDiasDiaria/60)*quantidade de minutos que sobrou
-
-                totalPayable = totalHours + totalMinutes # pagamento total, ja calculado horas e minutos trabalhados
-
-                resume.loc[0,'Total Payable'] = totalPayable
+                resume.loc[0,'Total Payable'] = payablePerMinute
 
                 st.header('Hours Resume')
                 st.write('All hours worked with all other hours within')
@@ -937,22 +925,19 @@ if authentication_status:
                 totalNormalTime = hourCalculator(9,df_edited) # coluna de horas totais
                 totalExtraTime = hourCalculator(8,df_edited) # coluna de horas extras
 
+                daily_rate_local = dfNames.loc[0,'Daily rate'] 
+                regular_hours_local = dfNames.loc[0,'Regular hours']
+
                 resume.loc[0,'Name'] = df_edited.loc[0,'Name']
                 resume.loc[0,'Month'] = choice
                 resume.loc[0,'Designation'] =  dfNames.loc[0,'Designation'] 
-                resume.loc[0,'Regular hours'] =  dfNames.loc[0,'Regular hours']
-                resume.loc[0,'Total hours worked'] = hourToMinute(totalNormalTime)
-                resume.loc[0,'Daily rate'] = dfNames.loc[0,'Daily rate'] 
+                resume.loc[0,'Regular hours'] = regular_hours_local 
+                resume.loc[0,'Total hours worked'] = hourToMinute(totalNormalTime) 
+                resume.loc[0,'Daily rate'] = daily_rate_local
                 
-                hourPayment = ((resume.loc[0,'Total hours worked']).hour)*((dfNames.loc[0,'Daily rate']/dfNames.loc[0,'Regular hours'])) # totalHorasTrabalhada  (diaria/totalDiasDiaria)
+                payablePerMinute = (daily_rate_local / (regular_hours_local*60))*totalNormalTime
 
-                totalHours = hourPayment # total pago por hora
-
-                totalMinutes = ((dfNames.loc[0,'Daily rate']/dfNames.loc[0,'Regular hours'])/60)*(resume.loc[0,'Total hours worked'].minute) # total pago por minuto (diaria/totalDiasDiaria/60)*quantidade de minutos que sobrou
-
-                totalPayable = totalHours + totalMinutes # pagamento total, ja calculado horas e minutos trabalhados
-
-                resume.loc[0,'Total Payable'] = totalPayable
+                resume.loc[0,'Total Payable'] = payablePerMinute
 
                 st.header('Hours Resume')
                 st.write('All hours worked with all other hours within')
@@ -1077,22 +1062,19 @@ if authentication_status:
                 totalNormalTime = hourCalculator(9,df_edited) # coluna de horas totais
                 totalExtraTime = hourCalculator(8,df_edited) # coluna de horas extras
 
+                daily_rate_local = dfNames.loc[0,'Daily rate'] 
+                regular_hours_local = dfNames.loc[0,'Regular hours']
+
                 resume.loc[0,'Name'] = df_edited.loc[0,'Name']
                 resume.loc[0,'Month'] = choice
                 resume.loc[0,'Designation'] =  dfNames.loc[0,'Designation'] 
-                resume.loc[0,'Regular hours'] =  dfNames.loc[0,'Regular hours']
-                resume.loc[0,'Total hours worked'] = hourToMinute(totalNormalTime)
-                resume.loc[0,'Daily rate'] = dfNames.loc[0,'Daily rate'] 
+                resume.loc[0,'Regular hours'] = regular_hours_local 
+                resume.loc[0,'Total hours worked'] = hourToMinute(totalNormalTime) 
+                resume.loc[0,'Daily rate'] = daily_rate_local
                 
-                hourPayment = ((resume.loc[0,'Total hours worked']).hour)*((dfNames.loc[0,'Daily rate']/dfNames.loc[0,'Regular hours'])) # totalHorasTrabalhada  (diaria/totalDiasDiaria)
+                payablePerMinute = (daily_rate_local / (regular_hours_local*60))*totalNormalTime
 
-                totalHours = hourPayment # total pago por hora
-
-                totalMinutes = ((dfNames.loc[0,'Daily rate']/dfNames.loc[0,'Regular hours'])/60)*(resume.loc[0,'Total hours worked'].minute) # total pago por minuto (diaria/totalDiasDiaria/60)*quantidade de minutos que sobrou
-
-                totalPayable = totalHours + totalMinutes # pagamento total, ja calculado horas e minutos trabalhados
-
-                resume.loc[0,'Total Payable'] = totalPayable
+                resume.loc[0,'Total Payable'] = payablePerMinute
 
                 st.header('Hours Resume')
                 st.write('All hours worked with all other hours within')
@@ -1217,22 +1199,19 @@ if authentication_status:
                 totalNormalTime = hourCalculator(9,df_edited) # coluna de horas totais
                 totalExtraTime = hourCalculator(8,df_edited) # coluna de horas extras
 
+                daily_rate_local = dfNames.loc[0,'Daily rate'] 
+                regular_hours_local = dfNames.loc[0,'Regular hours']
+
                 resume.loc[0,'Name'] = df_edited.loc[0,'Name']
                 resume.loc[0,'Month'] = choice
                 resume.loc[0,'Designation'] =  dfNames.loc[0,'Designation'] 
-                resume.loc[0,'Regular hours'] =  dfNames.loc[0,'Regular hours']
-                resume.loc[0,'Total hours worked'] = hourToMinute(totalNormalTime)
-                resume.loc[0,'Daily rate'] = dfNames.loc[0,'Daily rate'] 
+                resume.loc[0,'Regular hours'] = regular_hours_local 
+                resume.loc[0,'Total hours worked'] = hourToMinute(totalNormalTime) 
+                resume.loc[0,'Daily rate'] = daily_rate_local
                 
-                hourPayment = ((resume.loc[0,'Total hours worked']).hour)*((dfNames.loc[0,'Daily rate']/dfNames.loc[0,'Regular hours'])) # totalHorasTrabalhada  (diaria/totalDiasDiaria)
+                payablePerMinute = (daily_rate_local / (regular_hours_local*60))*totalNormalTime
 
-                totalHours = hourPayment # total pago por hora
-
-                totalMinutes = ((dfNames.loc[0,'Daily rate']/dfNames.loc[0,'Regular hours'])/60)*(resume.loc[0,'Total hours worked'].minute) # total pago por minuto (diaria/totalDiasDiaria/60)*quantidade de minutos que sobrou
-
-                totalPayable = totalHours + totalMinutes # pagamento total, ja calculado horas e minutos trabalhados
-
-                resume.loc[0,'Total Payable'] = totalPayable
+                resume.loc[0,'Total Payable'] = payablePerMinute
 
                 st.header('Hours Resume')
                 st.write('All hours worked with all other hours within')
@@ -1357,22 +1336,19 @@ if authentication_status:
                 totalNormalTime = hourCalculator(9,df_edited) # coluna de horas totais
                 totalExtraTime = hourCalculator(8,df_edited) # coluna de horas extras
 
+                daily_rate_local = dfNames.loc[0,'Daily rate'] 
+                regular_hours_local = dfNames.loc[0,'Regular hours']
+
                 resume.loc[0,'Name'] = df_edited.loc[0,'Name']
                 resume.loc[0,'Month'] = choice
                 resume.loc[0,'Designation'] =  dfNames.loc[0,'Designation'] 
-                resume.loc[0,'Regular hours'] =  dfNames.loc[0,'Regular hours']
-                resume.loc[0,'Total hours worked'] = hourToMinute(totalNormalTime)
-                resume.loc[0,'Daily rate'] = dfNames.loc[0,'Daily rate'] 
+                resume.loc[0,'Regular hours'] = regular_hours_local 
+                resume.loc[0,'Total hours worked'] = hourToMinute(totalNormalTime) 
+                resume.loc[0,'Daily rate'] = daily_rate_local
                 
-                hourPayment = ((resume.loc[0,'Total hours worked']).hour)*((dfNames.loc[0,'Daily rate']/dfNames.loc[0,'Regular hours'])) # totalHorasTrabalhada  (diaria/totalDiasDiaria)
+                payablePerMinute = (daily_rate_local / (regular_hours_local*60))*totalNormalTime
 
-                totalHours = hourPayment # total pago por hora
-
-                totalMinutes = ((dfNames.loc[0,'Daily rate']/dfNames.loc[0,'Regular hours'])/60)*(resume.loc[0,'Total hours worked'].minute) # total pago por minuto (diaria/totalDiasDiaria/60)*quantidade de minutos que sobrou
-
-                totalPayable = totalHours + totalMinutes # pagamento total, ja calculado horas e minutos trabalhados
-
-                resume.loc[0,'Total Payable'] = totalPayable
+                resume.loc[0,'Total Payable'] = payablePerMinute
 
                 st.header('Hours Resume')
                 st.write('All hours worked with all other hours within')
@@ -1497,22 +1473,19 @@ if authentication_status:
                 totalNormalTime = hourCalculator(9,df_edited) # coluna de horas totais
                 totalExtraTime = hourCalculator(8,df_edited) # coluna de horas extras
 
+                daily_rate_local = dfNames.loc[0,'Daily rate'] 
+                regular_hours_local = dfNames.loc[0,'Regular hours']
+
                 resume.loc[0,'Name'] = df_edited.loc[0,'Name']
                 resume.loc[0,'Month'] = choice
                 resume.loc[0,'Designation'] =  dfNames.loc[0,'Designation'] 
-                resume.loc[0,'Regular hours'] =  dfNames.loc[0,'Regular hours']
-                resume.loc[0,'Total hours worked'] = hourToMinute(totalNormalTime)
-                resume.loc[0,'Daily rate'] = dfNames.loc[0,'Daily rate'] 
+                resume.loc[0,'Regular hours'] = regular_hours_local 
+                resume.loc[0,'Total hours worked'] = hourToMinute(totalNormalTime) 
+                resume.loc[0,'Daily rate'] = daily_rate_local
                 
-                hourPayment = ((resume.loc[0,'Total hours worked']).hour)*((dfNames.loc[0,'Daily rate']/dfNames.loc[0,'Regular hours'])) # totalHorasTrabalhada  (diaria/totalDiasDiaria)
+                payablePerMinute = (daily_rate_local / (regular_hours_local*60))*totalNormalTime
 
-                totalHours = hourPayment # total pago por hora
-
-                totalMinutes = ((dfNames.loc[0,'Daily rate']/dfNames.loc[0,'Regular hours'])/60)*(resume.loc[0,'Total hours worked'].minute) # total pago por minuto (diaria/totalDiasDiaria/60)*quantidade de minutos que sobrou
-
-                totalPayable = totalHours + totalMinutes # pagamento total, ja calculado horas e minutos trabalhados
-
-                resume.loc[0,'Total Payable'] = totalPayable
+                resume.loc[0,'Total Payable'] = payablePerMinute
 
                 st.header('Hours Resume')
                 st.write('All hours worked with all other hours within')
@@ -1637,22 +1610,19 @@ if authentication_status:
                 totalNormalTime = hourCalculator(9,df_edited) # coluna de horas totais
                 totalExtraTime = hourCalculator(8,df_edited) # coluna de horas extras
 
+                daily_rate_local = dfNames.loc[0,'Daily rate'] 
+                regular_hours_local = dfNames.loc[0,'Regular hours']
+
                 resume.loc[0,'Name'] = df_edited.loc[0,'Name']
                 resume.loc[0,'Month'] = choice
                 resume.loc[0,'Designation'] =  dfNames.loc[0,'Designation'] 
-                resume.loc[0,'Regular hours'] =  dfNames.loc[0,'Regular hours']
-                resume.loc[0,'Total hours worked'] = hourToMinute(totalNormalTime)
-                resume.loc[0,'Daily rate'] = dfNames.loc[0,'Daily rate'] 
+                resume.loc[0,'Regular hours'] = regular_hours_local 
+                resume.loc[0,'Total hours worked'] = hourToMinute(totalNormalTime) 
+                resume.loc[0,'Daily rate'] = daily_rate_local
                 
-                hourPayment = ((resume.loc[0,'Total hours worked']).hour)*((dfNames.loc[0,'Daily rate']/dfNames.loc[0,'Regular hours'])) # totalHorasTrabalhada  (diaria/totalDiasDiaria)
+                payablePerMinute = (daily_rate_local / (regular_hours_local*60))*totalNormalTime
 
-                totalHours = hourPayment # total pago por hora
-
-                totalMinutes = ((dfNames.loc[0,'Daily rate']/dfNames.loc[0,'Regular hours'])/60)*(resume.loc[0,'Total hours worked'].minute) # total pago por minuto (diaria/totalDiasDiaria/60)*quantidade de minutos que sobrou
-
-                totalPayable = totalHours + totalMinutes # pagamento total, ja calculado horas e minutos trabalhados
-
-                resume.loc[0,'Total Payable'] = totalPayable
+                resume.loc[0,'Total Payable'] = payablePerMinute
 
                 st.header('Hours Resume')
                 st.write('All hours worked with all other hours within')
@@ -1777,22 +1747,19 @@ if authentication_status:
                 totalNormalTime = hourCalculator(9,df_edited) # coluna de horas totais
                 totalExtraTime = hourCalculator(8,df_edited) # coluna de horas extras
 
+                daily_rate_local = dfNames.loc[0,'Daily rate'] 
+                regular_hours_local = dfNames.loc[0,'Regular hours']
+
                 resume.loc[0,'Name'] = df_edited.loc[0,'Name']
                 resume.loc[0,'Month'] = choice
                 resume.loc[0,'Designation'] =  dfNames.loc[0,'Designation'] 
-                resume.loc[0,'Regular hours'] =  dfNames.loc[0,'Regular hours']
-                resume.loc[0,'Total hours worked'] = hourToMinute(totalNormalTime)
-                resume.loc[0,'Daily rate'] = dfNames.loc[0,'Daily rate'] 
+                resume.loc[0,'Regular hours'] = regular_hours_local 
+                resume.loc[0,'Total hours worked'] = hourToMinute(totalNormalTime) 
+                resume.loc[0,'Daily rate'] = daily_rate_local
                 
-                hourPayment = ((resume.loc[0,'Total hours worked']).hour)*((dfNames.loc[0,'Daily rate']/dfNames.loc[0,'Regular hours'])) # totalHorasTrabalhada  (diaria/totalDiasDiaria)
+                payablePerMinute = (daily_rate_local / (regular_hours_local*60))*totalNormalTime
 
-                totalHours = hourPayment # total pago por hora
-
-                totalMinutes = ((dfNames.loc[0,'Daily rate']/dfNames.loc[0,'Regular hours'])/60)*(resume.loc[0,'Total hours worked'].minute) # total pago por minuto (diaria/totalDiasDiaria/60)*quantidade de minutos que sobrou
-
-                totalPayable = totalHours + totalMinutes # pagamento total, ja calculado horas e minutos trabalhados
-
-                resume.loc[0,'Total Payable'] = totalPayable
+                resume.loc[0,'Total Payable'] = payablePerMinute
 
                 st.header('Hours Resume')
                 st.write('All hours worked with all other hours within')
@@ -1917,22 +1884,19 @@ if authentication_status:
                 totalNormalTime = hourCalculator(9,df_edited) # coluna de horas totais
                 totalExtraTime = hourCalculator(8,df_edited) # coluna de horas extras
 
+                daily_rate_local = dfNames.loc[0,'Daily rate'] 
+                regular_hours_local = dfNames.loc[0,'Regular hours']
+
                 resume.loc[0,'Name'] = df_edited.loc[0,'Name']
                 resume.loc[0,'Month'] = choice
                 resume.loc[0,'Designation'] =  dfNames.loc[0,'Designation'] 
-                resume.loc[0,'Regular hours'] =  dfNames.loc[0,'Regular hours']
-                resume.loc[0,'Total hours worked'] = hourToMinute(totalNormalTime)
-                resume.loc[0,'Daily rate'] = dfNames.loc[0,'Daily rate'] 
+                resume.loc[0,'Regular hours'] = regular_hours_local 
+                resume.loc[0,'Total hours worked'] = hourToMinute(totalNormalTime) 
+                resume.loc[0,'Daily rate'] = daily_rate_local
                 
-                hourPayment = ((resume.loc[0,'Total hours worked']).hour)*((dfNames.loc[0,'Daily rate']/dfNames.loc[0,'Regular hours'])) # totalHorasTrabalhada  (diaria/totalDiasDiaria)
+                payablePerMinute = (daily_rate_local / (regular_hours_local*60))*totalNormalTime
 
-                totalHours = hourPayment # total pago por hora
-
-                totalMinutes = ((dfNames.loc[0,'Daily rate']/dfNames.loc[0,'Regular hours'])/60)*(resume.loc[0,'Total hours worked'].minute) # total pago por minuto (diaria/totalDiasDiaria/60)*quantidade de minutos que sobrou
-
-                totalPayable = totalHours + totalMinutes # pagamento total, ja calculado horas e minutos trabalhados
-
-                resume.loc[0,'Total Payable'] = totalPayable
+                resume.loc[0,'Total Payable'] = payablePerMinute
 
                 st.header('Hours Resume')
                 st.write('All hours worked with all other hours within')
