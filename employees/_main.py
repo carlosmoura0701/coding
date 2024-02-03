@@ -78,7 +78,7 @@ if authentication_status:
 
     with st.sidebar:
 
-        image = Image.open('/home/carlos/Dropbox/code/employees/images/logo.png')
+        image = Image.open('employees/images/logo.png')
         st.image(image)
 
         st.sidebar.title(f'Welcome {name}')
