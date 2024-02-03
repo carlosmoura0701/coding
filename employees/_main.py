@@ -303,10 +303,10 @@ if authentication_status:
 
                 # ------- restaurando o indice do db e do resume db ------- #
 
-                ordered_db_list = sorted_directory_listing_with_os_listdir('employees/db/')
+                ordered_db_list = sorted_directory_listing_with_os_listdir('employees/db')
                 renameFiles(ordered_db_list,db_path)
 
-                ordered_resume_db_list = sorted_directory_listing_with_os_listdir('employees/resumeDb/')          
+                ordered_resume_db_list = sorted_directory_listing_with_os_listdir('employees/resumeDb')          
                 renameFiles(ordered_resume_db_list,resume_db_path)
 
                 st.rerun()     
