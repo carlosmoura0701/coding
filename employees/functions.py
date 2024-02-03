@@ -9,7 +9,6 @@ from pandas import DataFrame
 def hourToMinute(min): # calculadora de minutos para horas
     h=min//60
     m=min%60
-
     return "%02d:%02d" % (h, m) 
 
 def hourCalculator(col,df_edited): # recebe a coluna para calcular o total de horas e minutos nela
