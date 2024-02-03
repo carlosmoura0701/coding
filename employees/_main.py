@@ -1824,5 +1824,139 @@ if authentication_status:
                         df12b.to_excel(excel_writer, sheet_name='December', index=False)
                         
                         st.rerun()
-
             if choice == 'December':
+
+                st.header(choice + ' timesheet')
+                dfNames = pd.read_csv(employee_path,sep=';')
+                names = dfNames['Name']
+
+                selectedEmployee = st.selectbox('Select the employee',names) # selecionando o funcionário desejado pelo label
+                rowIndex = dfNames.index[dfNames['Name'] == selectedEmployee].tolist()# retornando uma lista com o índice e o nome do funcionário selecionado
+                employeeIndex = rowIndex[0] # índice numérico do funcionário selecionado
+
+                # ------- lendo e salvando em variaveis os presets anteriores dos registros do banco de dados ------- #
+
+                a_path = db_path
+                a_file = str(employeeIndex) + ".xlsx"
+                joined_path = os.path.join(a_path, a_file)
+
+                xls = pd.ExcelFile(joined_path) 
+
+                df1 = pd.read_excel(xls, 'January')
+                df2 = pd.read_excel(xls, 'February')
+                df3 = pd.read_excel(xls, 'March')
+                df4 = pd.read_excel(xls, 'April')
+                df5 = pd.read_excel(xls, 'May')
+                df6 = pd.read_excel(xls, 'June')
+                df7 = pd.read_excel(xls, 'July')
+                df8 = pd.read_excel(xls, 'August')
+                df9 = pd.read_excel(xls, 'Setember')
+                df10 = pd.read_excel(xls, 'October')
+                df11 = pd.read_excel(xls, 'November')
+                df12 = pd.read_excel(xls, 'December')
+
+                # ------- lendo e salvando os presets anteriores dos registros do banco de dados do resumo ------- #
+
+                b_path = resume_db_path
+                b_file = str(employeeIndex) + ".xlsx"
+                joined_pathb = os.path.join(b_path, b_file)
+
+                xlsb = pd.ExcelFile(joined_pathb) # salvando os presets anteriores dos registros do banco de dados
+
+                df1b = pd.read_excel(xlsb, 'January')
+                df2b = pd.read_excel(xlsb, 'February')
+                df3b = pd.read_excel(xlsb, 'March')
+                df4b = pd.read_excel(xlsb, 'April')
+                df5b = pd.read_excel(xlsb, 'May')
+                df6b = pd.read_excel(xlsb, 'June')
+                df7b = pd.read_excel(xlsb, 'July')
+                df8b = pd.read_excel(xlsb, 'August')
+                df9b = pd.read_excel(xlsb, 'Setember')
+                df10b = pd.read_excel(xlsb, 'October')
+                df11b = pd.read_excel(xlsb, 'November')
+                df12b = pd.read_excel(xlsb, 'December')    
+                
+                df_edited = dateEditor(df12)                
+
+                form = st.form('str',border=False)
+                                
+                resume = resumeDfCreate()
+
+                totalNormalTime = hourCalculator(9,df_edited) # coluna de horas totais
+                totalExtraTime = hourCalculator(8,df_edited) # coluna de horas extras
+
+                daily_rate_local = dfNames.loc[0,'Daily rate'] 
+                regular_hours_local = dfNames.loc[0,'Regular hours']
+
+                resume.loc[0,'Name'] = df_edited.loc[0,'Name']
+                resume.loc[0,'Month'] = choice
+                resume.loc[0,'Designation'] =  dfNames.loc[0,'Designation'] 
+                resume.loc[0,'Regular hours'] = regular_hours_local 
+                resume.loc[0,'Total hours worked'] = hourToMinute(totalNormalTime) 
+                resume.loc[0,'Daily rate'] = daily_rate_local
+                
+                payablePerMinute = (daily_rate_local / (regular_hours_local*60))*totalNormalTime
+
+                resume.loc[0,'Total Payable'] = payablePerMinute
+
+                st.header('Hours Resume')
+                st.write('All hours worked with all other hours within')
+                
+                st.dataframe(resume,hide_index=True,width=3000)
+                
+                for i in range(len(df_edited)): # atualizando todos os registros da tabela confome as regras
+                    
+                    sick = df_edited.iloc[i,5] 
+                    vacation = df_edited.iloc[i,6]
+                    holiday = df_edited.iloc[i,7]
+
+                    temp = str(df_edited.iloc[i,2])
+                    temp2 = type(df_edited.iloc[i,2])
+
+                    if((sick or vacation or holiday) == True): # resetando os valores em caso de nulo
+                        df_edited.iloc[i,2] = datetime(2024,1,1,0)
+                        df_edited.iloc[i,3] = datetime(2024,1,1,0)
+                        df_edited.iloc[i,8] = datetime(2024,1,1,0)
+                        df_edited.iloc[i,9] = datetime(2024,1,1,0)
+                    else:
+                        startTime = df_edited.iloc[i,2] # começo do horário de trabalho
+                        endTime = df_edited.iloc[i,3] # final do horário de trabalho
+                        extraHours = df_edited.iloc[i,8] # hora extra
+
+                        hoursTotal = endTime - startTime + extraHours # hora total trabalhada, horaFinal - horaInicial + horaExtra
+                        hoursTotalStr = hoursTotal # hora total convertida em str (manipulação de datas sempre é feita com strings)
+                        df_edited.iloc[i,9] = hoursTotalStr # inserindo o total de horas na coluna 'TOTAL HOURS'
+
+                button_press = form.form_submit_button()
+                
+                if button_press:
+
+                    with pd.ExcelWriter(joined_path) as excel_writer: # salvando as mudancas somente do mes requerido no banco de dados principal
+                        df1.to_excel(excel_writer, sheet_name='January', index=False) # ----------- VARIA CONFORME O MES ----------- #
+                        df2.to_excel(excel_writer, sheet_name='February', index=False)
+                        df3.to_excel(excel_writer, sheet_name='March', index=False)
+                        df4.to_excel(excel_writer, sheet_name='April', index=False)
+                        df5.to_excel(excel_writer, sheet_name='May', index=False)
+                        df6.to_excel(excel_writer, sheet_name='June', index=False)
+                        df7.to_excel(excel_writer, sheet_name='July', index=False)
+                        df8.to_excel(excel_writer, sheet_name='August', index=False)
+                        df9.to_excel(excel_writer, sheet_name='Setember', index=False)
+                        df10.to_excel(excel_writer, sheet_name='October', index=False)
+                        df11.to_excel(excel_writer, sheet_name='November', index=False)
+                        df_edited.to_excel(excel_writer, sheet_name='December', index=False)
+                        
+                    with pd.ExcelWriter(joined_pathb) as excel_writer: # salvando as mudancas somente do mes requerido no banco de dados do resumo
+                        df1b.to_excel(excel_writer, sheet_name='January', index=False) # ----------- VARIA CONFORME O MES ----------- #
+                        df2b.to_excel(excel_writer, sheet_name='February', index=False)
+                        df3b.to_excel(excel_writer, sheet_name='March', index=False)
+                        df4b.to_excel(excel_writer, sheet_name='April', index=False)
+                        df5b.to_excel(excel_writer, sheet_name='May', index=False)
+                        df6b.to_excel(excel_writer, sheet_name='June', index=False)
+                        df7b.to_excel(excel_writer, sheet_name='July', index=False)
+                        df8b.to_excel(excel_writer, sheet_name='August', index=False)
+                        df9b.to_excel(excel_writer, sheet_name='Setember', index=False)
+                        df10b.to_excel(excel_writer, sheet_name='October', index=False)
+                        df11b.to_excel(excel_writer, sheet_name='November', index=False)
+                        resume.to_excel(excel_writer, sheet_name='December', index=False)
+                        
+                        st.rerun()
