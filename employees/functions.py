@@ -113,8 +113,8 @@ def renameFiles(list,path):
     
     for count in range(len(list)):
    
-        source = path + list[count]
-        destination = path + str(count) + ".xlsx"
+        source = path + '/' + list[count]
+        destination = path + '/' + str(count) + ".xlsx"
         os.rename(source, destination)
 
         count += 1
