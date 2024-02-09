@@ -4,7 +4,6 @@ import streamlit_authenticator as stauth
 
 # nao esquecer de atualizar a lista de usuarios no _main.py
 
-
 usernames = ['Carlos Moura','Sheila Santana','Judas Escariodes']
 names = ['carlosmoura','sheilasantanta','judas']
 passwords = ['admin','admin','admin']
@@ -14,6 +13,8 @@ credentials = {"usernames":{}}
 for uname,name,pwd in zip(usernames,names,passwords):
     user_dict = {"name": name, "password": pwd}
     credentials["usernames"].update({uname: user_dict})
+        
+authenticator = stauth.Authenticate(credentials, "cokkie_name", "random_key", cookie_expiry_days=30)
 
 hashed_passwords = stauth.Hasher(passwords).generate()
 
