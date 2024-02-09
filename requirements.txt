@@ -1,0 +1,17 @@
+numpy
+altair
+datetime
+pathlib
+streamlit_option_menu
+streamlit_extras
+pandas
+streamlit>=1.11.1
+streamlit-authenticator>=0.1.5
+extra-streamlit-components>=0.1.60
+
+
+
+
+
+
+
