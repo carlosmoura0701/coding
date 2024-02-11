@@ -13,8 +13,6 @@ credentials = {"usernames":{}}
 for uname,name,pwd in zip(usernames,names,passwords):
     user_dict = {"name": name, "password": pwd}
     credentials["usernames"].update({uname: user_dict})
-        
-authenticator = stauth.Authenticate(credentials, "cokkie_name", "random_key", cookie_expiry_days=30)
 
 hashed_passwords = stauth.Hasher(passwords).generate()
 
